@@ -1,0 +1,65 @@
+name: Build and publish container image with tfswitch and tftest
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Hadolint Dockerfile Linter
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          format: sarif
+          output-file: hadolint-results.sarif
+
+      - name: Update Pull Request with Hadolint Report
+        uses: actions/github-script@v6
+        if: ${{ failure() }}
+        with:
+          script: |
+            const output = `
+            #### Hadolint: \`${{ steps.hadolint.outcome }}\`
+            \`\`\`
+            ${process.env.HADOLINT_RESULTS}
+            \`\`\`
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Kaniko build
+        uses: aevea/action-kaniko@57fd639926c415a2fa4150ac72230eb5758ff48b
+        with:
+          image: tftest
+          registry: ghcr.io
+          password: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.event.pull_request.head.sha }}
+
+  testing:
+    needs: build
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/stv-io/tg-gcp-ci-tools-image/tg-gcp-ci-tools-image:${{ github.event.pull_request.head.sha }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+
+    steps:
+      - name: test
+        run: |
+          tfswitch
+          tgswitch
+          terraform version
+          tf version
+          terragrunt -v
+          tg -v
+          gcloud -v
