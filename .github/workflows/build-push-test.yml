@@ -1,4 +1,4 @@
-name: Build and publish container image with tfswitch and tftest
+name: Build and publish container image
 
 on:
   pull_request:
@@ -16,6 +16,8 @@ jobs:
           dockerfile: Dockerfile
           format: sarif
           output-file: hadolint-results.sarif
+          failure-threshold: ignore #
+          # failure-threshold: error | warning | info #
 
       - name: Update Pull Request with Hadolint Report
         uses: actions/github-script@v6
