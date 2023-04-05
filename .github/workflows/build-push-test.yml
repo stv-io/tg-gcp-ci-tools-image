@@ -14,7 +14,8 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
-          format: checkstyle
+          format: tty
+          no-fail: true
           # output-file: hadolint-results.sarif
           failure-threshold: ignore
           # failure-threshold: error | warning | info #
