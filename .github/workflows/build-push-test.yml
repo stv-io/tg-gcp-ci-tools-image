@@ -12,6 +12,7 @@ jobs:
 
       - name: Hadolint Dockerfile Linter
         uses: hadolint/hadolint-action@v3.1.0
+        id: hadolint
         with:
           dockerfile: Dockerfile
           format: tty

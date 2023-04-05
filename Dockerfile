@@ -45,14 +45,5 @@ RUN echo 'source "/home/tfuser/.local/gcloud/path.bash.inc"' >> /home/tfuser/.ba
 USER tfuser
 WORKDIR /home/tfuser
 
-# RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-#     && python3 get-pip.py --user \
-#     && rm get-pip.py \
-#     && /home/tfuser/.local/bin/pip3 install --no-cache-dir google-cloud-sdk==${GCLOUD_VERSION}
-
-# Set the default shell
 SHELL ["/bin/bash", "-c"]
-
-# Set the default Terraform and Terragrunt version
-
 ENTRYPOINT ["/bin/bash"]

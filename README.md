@@ -31,8 +31,8 @@ tfuser@dc9f56bbe43d:/code/Environments$ tg run-all plan
 
 tflint
 tfvc?
-pin versions
+pin versions inside container, including tgswitch and tfswitch
 tests, make sure stuff is installed
-see if we can squash image
+see if we can squash image to make it smaller
 
 do we need the gcloud sdk in terraform?
