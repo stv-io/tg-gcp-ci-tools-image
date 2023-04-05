@@ -17,7 +17,7 @@ docker run -it \
   -v $(pwd):/code \
   -v $HOME/.config/gcloud:/home/tfuser/.config/gcloud \
   -v $HOME/.ssh:/home/tfuser/.ssh \
-<image>
+ghcr.io/stv-io/tg-gcp-ci-tools-image/tg-gcp-ci-tools-image:3f7a4626fcd4cc62d92b94710670634e58815aae
 
 # once inside the container
 
@@ -37,3 +37,7 @@ tests, make sure stuff is installed
 see if we can squash image to make it smaller
 
 check if we need the gcloud sdk in terraform?
+
+## TODO / Improvement?
+
+Consider starting from <https://hub.docker.com/r/google/cloud-sdk/dockerfile/> and adding terraform and terragrunt ..

@@ -40,20 +40,20 @@ jobs:
               body: output
             })
 
-      # - name: Kaniko build
-      #   uses: aevea/action-kaniko@57fd639926c415a2fa4150ac72230eb5758ff48b
-      #   with:
-      #     image: tg-gcp-ci-tools-image
-      #     registry: ghcr.io
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-      #     tag: ${{ github.event.pull_request.head.sha }}
+      - name: Kaniko build
+        uses: aevea/action-kaniko@57fd639926c415a2fa4150ac72230eb5758ff48b
+        with:
+          image: tg-gcp-ci-tools-image
+          registry: ghcr.io
+          password: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.event.pull_request.head.sha }}
 
   testing:
     needs: build
     runs-on: ubuntu-latest
     container:
-      # image: ghcr.io/stv-io/tg-gcp-ci-tools-image/tg-gcp-ci-tools-image:${{ github.event.pull_request.head.sha }}
-      image: ghcr.io/stv-io/tg-gcp-ci-tools-image/tg-gcp-ci-tools-image:3f7a4626fcd4cc62d92b94710670634e58815aae
+      image: ghcr.io/stv-io/tg-gcp-ci-tools-image/tg-gcp-ci-tools-image:${{ github.event.pull_request.head.sha }}
+      # image: ghcr.io/stv-io/tg-gcp-ci-tools-image/tg-gcp-ci-tools-image:3f7a4626fcd4cc62d92b94710670634e58815aae
       # temp!
       credentials:
         username: ${{ github.actor }}
@@ -62,7 +62,7 @@ jobs:
     steps:
       - name: test
         run: |
-          export PATH=$PATH:/home/tfuser/bin:/home/tfuser.local/bin
+          export PATH=$PATH:/home/tfuser/bin:/home/tfuser/.local/bin:/home/tfuser/.local/gcloud/bin
           export CLOUDSDK_PYTHON=/usr/bin/python3
           tfswitch
           tgswitch
