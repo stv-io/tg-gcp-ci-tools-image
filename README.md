@@ -29,10 +29,11 @@ tfuser@dc9f56bbe43d:/code/Environments$ tg run-all plan
 
 ## TODO
 
-tflint
-tfvc?
-pin versions inside container, including tgswitch and tfswitch
+Install tflint
+Install tfvc for
+pin versions inside container, including tgswitch and tfswitch (install them without | bash)
+hadolint
 tests, make sure stuff is installed
 see if we can squash image to make it smaller
 
-do we need the gcloud sdk in terraform?
+check if we need the gcloud sdk in terraform?
