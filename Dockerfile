@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # sudo=1.9.0-2.1+deb10u3 \
     ca-certificates \
     # ca-certificates=20210119 \
+    jq \
+    # jq=1.6... \
     python3 \
     # python3=3.9.13-3 \
     python3-distutils \

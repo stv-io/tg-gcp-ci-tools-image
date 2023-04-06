@@ -17,7 +17,7 @@ docker run -it \
   -v $(pwd):/code \
   -v $HOME/.config/gcloud:/home/tfuser/.config/gcloud \
   -v $HOME/.ssh:/home/tfuser/.ssh \
-ghcr.io/stv-io/tg-gcp-ci-tools-image/tg-gcp-ci-tools-image:3f7a4626fcd4cc62d92b94710670634e58815aae
+ghcr.io/stv-io/tg-gcp-ci-tools-image/tg-gcp-ci-tools-image:v0.1.0
 
 # once inside the container
 
@@ -38,6 +38,11 @@ see if we can squash image to make it smaller
 
 check if we need the gcloud sdk in terraform?
 
-## TODO / Improvement?
+In runner, when running `gcloud` we get this warning!
+WARNING: Could not setup log file in /github/home/.config/gcloud/logs, (Error: Could not create directory [/github/home/.config/gcloud/logs/2023.04.05]: Permission denied.
+Please verify that you have permissions to write to the parent directory..
+The configuration directory may not be writable. To learn more, see <https://cloud.google.com/sdk/docs/configurations#creating_a_configuration>
+
+## Improvement?
 
 Consider starting from <https://hub.docker.com/r/google/cloud-sdk/dockerfile/> and adding terraform and terragrunt ..
