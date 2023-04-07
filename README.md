@@ -31,7 +31,7 @@ tfuser@dc9f56bbe43d:/code/Environments$ tg run-all plan
 
 Install tflint
 Install tfvc for
-pin versions inside container, including tgswitch and tfswitch (install them without | bash)
+pin versions inside container
 hadolint
 tests, make sure stuff is installed
 see if we can squash image to make it smaller
