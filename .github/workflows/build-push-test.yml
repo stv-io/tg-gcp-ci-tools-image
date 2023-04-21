@@ -17,7 +17,6 @@ jobs:
           dockerfile: Dockerfile
           format: tty
           no-fail: true
-          # output-file: hadolint-results.sarif
           failure-threshold: ignore
           # failure-threshold: error | warning | info #
 
@@ -75,3 +74,4 @@ jobs:
           tg -v
           export CLOUDSDK_PYTHON=/usr/bin/python3          
           gcloud -v
+          gpg --version
