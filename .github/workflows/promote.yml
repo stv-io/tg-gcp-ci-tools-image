@@ -5,38 +5,58 @@ on:
     branches: [ main ]
 
 jobs:
-  promote-and-release:
+  get-pr-info:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-pr-info.outputs.VERSION }}
+      container_tag: ${{ steps.get-pr-info.outputs.CONTAINER_TAG }}
+      pr_num: ${{ steps.get-pr-info.outputs.PR_NUM }}
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 50
-      - name: Set variables from file
+          ref: 'main'
+      - name: Obtain PR and container tag info
+        id: get-pr-info
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=$(cat VERSION)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "$VER"
           git --no-pager log --pretty=oneline
           PR_NUM=$(git --no-pager log --pretty=oneline  | grep "#" | head -n 1  | awk -F '#' '{print $2}' | awk '{print $1}' | tr -d '(#)')
-          echo "PR_NUM $PR_NUM"
           CONTAINER_TAG=$(gh pr view $PR_NUM --json commits | jq -r '.commits[-1].oid')
           echo "CONTAINER_TAG $CONTAINER_TAG"
-          echo "CONTAINER_TAG=$CONTAINER_TAG" >> $GITHUB_ENV
-          echo "PR_NUM=$PR_NUM" >> $GITHUB_ENV
+          echo "VERSION $VERSION"
+          echo "PR_NUM $PR_NUM"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "CONTAINER_TAG=$CONTAINER_TAG" >> $GITHUB_OUTPUT
+          echo "PR_NUM=$PR_NUM" >> $GITHUB_OUTPUT
 
+  copy-multi-arch-skopeo:
+    runs-on: ubuntu-latest
+    needs: get-pr-info
+    container: quay.io/skopeo/stable:v1.11.2
+    steps:
       - name: "Skopeo promote previous PR's build"
+        env:
+          VERSION: ${{needs.get-pr-info.outputs.version}}
+          CONTAINER_TAG: ${{needs.get-pr-info.outputs.container_tag}}
+          PR_NUM: ${{needs.get-pr-info.outputs.pr_num}}
         run: |
-          echo "DEBUG Version $VERSION"
+          echo "DEBUG VERSION $VERSION"
+          echo "DEBUG CONTAINER_TAG $CONTAINER_TAG"
+          echo "DEBUG PR_NUM $PR_NUM"
           echo ${{ secrets.GITHUB_TOKEN }} | skopeo login ghcr.io -u stv-io --password-stdin
           echo "Promoting built image to release"
+          skopeo inspect docker://ghcr.io/${{ github.repository }}:${CONTAINER_TAG}
           skopeo copy --multi-arch all docker://ghcr.io/${{ github.repository }}:${CONTAINER_TAG} docker://ghcr.io/${{ github.repository }}:v${VERSION}
 
       - name: Create release in Github
         id: create-release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{needs.get-pr-info.outputs.version}}
+          PR_NUM: ${{needs.get-pr-info.outputs.pr_num}}
         run: |
           gh pr view $PR_NUM --json body | jq -r .body > changelog.md
           gh release create ${VERSION} -F changelog.md
