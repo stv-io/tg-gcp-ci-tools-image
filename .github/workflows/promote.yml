@@ -31,7 +31,7 @@ jobs:
           echo "DEBUG Version $VERSION"
           echo ${{ secrets.GITHUB_TOKEN }} | skopeo login ghcr.io -u stv-io --password-stdin
           echo "Promoting built image to release"
-          skopeo copy docker://ghcr.io/${{ github.repository }}:${CONTAINER_TAG} docker://ghcr.io/${{ github.repository }}:v${VERSION}
+          skopeo copy --multi-arch all docker://ghcr.io/${{ github.repository }}:${CONTAINER_TAG} docker://ghcr.io/${{ github.repository }}:v${VERSION}
 
       - name: Create release in Github
         id: create-release
