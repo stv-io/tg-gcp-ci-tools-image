@@ -62,5 +62,5 @@ jobs:
           VERSION: ${{needs.get-pr-info.outputs.version}}
           PR_NUM: ${{needs.get-pr-info.outputs.pr_num}}
         run: |
-          gh pr view $PR_NUM --json body | jq -r .body > changelog.md
-          gh release create ${VERSION} -F changelog.md
+          gh pr view $PR_NUM --json body --repo ${{ github.repository }} | jq -r .body > changelog.md
+          gh release create ${VERSION} -F changelog.md --repo ${{ github.repository }}
