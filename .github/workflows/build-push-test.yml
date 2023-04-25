@@ -15,7 +15,7 @@ jobs:
         uses: docker/metadata-action@v4.0.1
         with:
           images: |
-            ghcr.io/${GITHUB_REPOSITORY}
+            ghcr.io/${{ github.repository }}
           tags: |
             type=raw,value=${{ github.event.pull_request.head.sha }}
 
