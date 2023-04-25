@@ -1,4 +1,4 @@
-name: Build and publish container image
+name: Build publish and test container image
 
 on:
   pull_request:
@@ -26,12 +26,20 @@ jobs:
           dockerfile: Dockerfile
           format: tty
           no-fail: true
-          failure-threshold: ignore
-          # failure-threshold: error | warning | info #
+          failure-threshold: warning
+
+      - id: check-hadolint-result
+        shell: bash
+        run: |
+          if [ "${{ env.HADOLINT_RESULTS }}" != '' ]; then
+            echo "comment=true" >> $GITHUB_OUTPUT;
+          else
+            echo "comment=false" >> $GITHUB_OUTPUT;
+          fi
 
       - name: Update Pull Request with Hadolint Report
         uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && ${{ steps.check-hadolint-result.outputs.comment == 'true' }}
         with:
           script: |
             const output = `
@@ -50,7 +58,7 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -79,7 +87,7 @@ jobs:
           - arm64
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
