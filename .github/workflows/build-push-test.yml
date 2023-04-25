@@ -71,12 +71,12 @@ jobs:
     # needs: build
     name: Run tests on ${{ matrix.arch }}
     runs-on: ubuntu-latest
-    container:
-      # image: ghcr.io/${{ github.repository }}:${{ github.event.pull_request.head.sha }}
-      image: ghcr.io/${{ github.repository }}:a4b4cfac5b74b8c2e5da64da822167c556eea4ec
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
+    # container:
+    #   # image: ghcr.io/${{ github.repository }}:${{ github.event.pull_request.head.sha }}
+    #   image: ghcr.io/${{ github.repository }}:a4b4cfac5b74b8c2e5da64da822167c556eea4ec
+    #   credentials:
+    #     username: ${{ github.actor }}
+    #     password: ${{ secrets.github_token }}
 
     strategy:
       matrix:
