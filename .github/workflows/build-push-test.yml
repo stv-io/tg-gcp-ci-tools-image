@@ -97,5 +97,7 @@ jobs:
             -v $(pwd):/${{ github.workspace }} \
             -w ${{ github.workspace }} \
             --platform linux/${{ matrix.arch }} \
-            ghcr.io/${{ github.repository }}:${{ github.event.pull_request.head.sha }} \
+            ghcr.io/stv-io/tg-gcp-ci-tools-image:a4b4cfac5b74b8c2e5da64da822167c556eea4ec \
             ./.github/workflows/ci.sh
+
+
