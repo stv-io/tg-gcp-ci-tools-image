@@ -46,7 +46,6 @@ RUN curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/rele
     apt-get autoremove -y && apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-
 ADD https://raw.githubusercontent.com/twistedpair/google-cloud-sdk/master/google-cloud-sdk/completion.bash.inc /home/tfuser/.local/gcloud/completion.bash.inc
 ADD https://raw.githubusercontent.com/twistedpair/google-cloud-sdk/master/google-cloud-sdk/path.bash.inc /home/tfuser/.local/gcloud/path.bash.inc
 COPY .bashrc /home/tfuser/.bashrc
