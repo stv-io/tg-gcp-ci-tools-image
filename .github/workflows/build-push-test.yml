@@ -5,78 +5,72 @@ on:
     branches: [ main ]
 
 jobs:
-  # build:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Docker meta
-  #       id: meta
-  #       uses: docker/metadata-action@v4.0.1
-  #       with:
-  #         images: |
-  #           ghcr.io/${{ github.repository }}
-  #         tags: |
-  #           type=raw,value=${{ github.event.pull_request.head.sha }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=${{ github.event.pull_request.head.sha }}
 
-  #     - name: Hadolint Dockerfile Linter
-  #       uses: hadolint/hadolint-action@v3.1.0
-  #       id: hadolint
-  #       with:
-  #         dockerfile: Dockerfile
-  #         format: tty
-  #         no-fail: true
-  #         failure-threshold: ignore
-  #         # failure-threshold: error | warning | info #
+      - name: Hadolint Dockerfile Linter
+        uses: hadolint/hadolint-action@v3.1.0
+        id: hadolint
+        with:
+          dockerfile: Dockerfile
+          format: tty
+          no-fail: true
+          failure-threshold: ignore
+          # failure-threshold: error | warning | info #
 
-  #     - name: Update Pull Request with Hadolint Report
-  #       uses: actions/github-script@v6
-  #       if: github.event_name == 'pull_request'
-  #       with:
-  #         script: |
-  #           const output = `
-  #           #### Hadolint: \`${{ steps.hadolint.outcome }}\`
-  #           \`\`\`
-  #           ${process.env.HADOLINT_RESULTS}
-  #           \`\`\`
-  #           `;
+      - name: Update Pull Request with Hadolint Report
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const output = `
+            #### Hadolint: \`${{ steps.hadolint.outcome }}\`
+            \`\`\`
+            ${process.env.HADOLINT_RESULTS}
+            \`\`\`
+            `;
 
-  #           github.rest.issues.createComment({
-  #             issue_number: context.issue.number,
-  #             owner: context.repo.owner,
-  #             repo: context.repo.repo,
-  #             body: output
-  #           })
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
 
-  #     - name: Set up QEMU
-  #       uses: docker/setup-qemu-action@v2
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
-  #     - name: Login to GitHub Container Registry
-  #       uses: docker/login-action@v2
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.actor }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
-  #     -
-  #       name: Build and push
-  #       uses: docker/build-push-action@v3.0.0
-  #       with:
-  #         context: .
-  #         platforms: linux/amd64,linux/arm64
-  #         push: true
-  #         tags: ${{ steps.meta.outputs.tags }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v3.0.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
 
   testing:
-    # needs: build
     name: Run tests on ${{ matrix.arch }}
     runs-on: ubuntu-latest
-    # container:
-    #   # image: ghcr.io/${{ github.repository }}:${{ github.event.pull_request.head.sha }}
-    #   image: ghcr.io/${{ github.repository }}:a4b4cfac5b74b8c2e5da64da822167c556eea4ec
-    #   credentials:
-    #     username: ${{ github.actor }}
-    #     password: ${{ secrets.github_token }}
 
     strategy:
       matrix:
@@ -86,6 +80,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
@@ -93,13 +88,12 @@ jobs:
 
       - name: Run tests using docker and qemu
         run: |
-          pwd
           docker run \
             --rm \
             -v $(pwd):/${{ github.workspace }} \
             -w ${{ github.workspace }} \
             --platform linux/${{ matrix.arch }} \
-            ghcr.io/stv-io/tg-gcp-ci-tools-image:a4b4cfac5b74b8c2e5da64da822167c556eea4ec \
+            ghcr.io/${{ github.repository }}:${{ github.event.pull_request.head.sha }} \
             ${{ github.workspace }}/.github/workflows/ci.sh
 
 
