@@ -1,19 +1,16 @@
 name: Re-tag and copy to released version
 
 on:
-  # push:
-  #   branches: [ main ]
-  pull_request:
+  push:
     branches: [ main ]
-  
 
 jobs:
   get-pr-info:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get-pr-info.outputs.VERSION }}
-      container_tag: ${{ steps.get-pr-info.outputs.CONTAINER_TAG }}    
-      pr_num: ${{ steps.get-pr-info.outputs.PR_NUM }}    
+      container_tag: ${{ steps.get-pr-info.outputs.CONTAINER_TAG }}
+      pr_num: ${{ steps.get-pr-info.outputs.PR_NUM }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -25,12 +22,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=$(cat VERSION)
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           git --no-pager log --pretty=oneline
           PR_NUM=$(git --no-pager log --pretty=oneline  | grep "#" | head -n 1  | awk -F '#' '{print $2}' | awk '{print $1}' | tr -d '(#)')
-          echo "PR_NUM $PR_NUM"
           CONTAINER_TAG=$(gh pr view $PR_NUM --json commits | jq -r '.commits[-1].oid')
           echo "CONTAINER_TAG $CONTAINER_TAG"
+          echo "VERSION $VERSION"
+          echo "PR_NUM $PR_NUM"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "CONTAINER_TAG=$CONTAINER_TAG" >> $GITHUB_OUTPUT
           echo "PR_NUM=$PR_NUM" >> $GITHUB_OUTPUT
 
@@ -39,7 +37,7 @@ jobs:
     needs: get-pr-info
     container: quay.io/skopeo/stable:v1.11.2
     steps:
-      - name: "Skopeo promote previous PR's build"      
+      - name: "Skopeo promote previous PR's build"
         env:
           VERSION: ${{needs.get-pr-info.outputs.version}}
           CONTAINER_TAG: ${{needs.get-pr-info.outputs.container_tag}}
@@ -50,14 +48,15 @@ jobs:
           echo "DEBUG PR_NUM $PR_NUM"
           echo ${{ secrets.GITHUB_TOKEN }} | skopeo login ghcr.io -u stv-io --password-stdin
           echo "Promoting built image to release"
-          skopeo copy --multi-arch all docker://ghcr.io/${{ github.repository }}:${CONTAINER_TAG} docker://ghcr.io/${{ github.repository }}:v${VERSION}-rc
+          skopeo inspect docker://ghcr.io/${{ github.repository }}:${CONTAINER_TAG}
+          skopeo copy --multi-arch all docker://ghcr.io/${{ github.repository }}:${CONTAINER_TAG} docker://ghcr.io/${{ github.repository }}:v${VERSION}
 
-      # - name: Create release in Github
-      #   id: create-release
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     VERSION: ${{needs.get-pr-info.outputs.version}}
-      #     PR_NUM: ${{needs.get-pr-info.outputs.pr_num}}
-      #   run: |
-      #     gh pr view $PR_NUM --json body | jq -r .body > changelog.md
-      #     gh release create ${VERSION} -F changelog.md
+      - name: Create release in Github
+        id: create-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{needs.get-pr-info.outputs.version}}
+          PR_NUM: ${{needs.get-pr-info.outputs.pr_num}}
+        run: |
+          gh pr view $PR_NUM --json body | jq -r .body > changelog.md
+          gh release create ${VERSION} -F changelog.md
