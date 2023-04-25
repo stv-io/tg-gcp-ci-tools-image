@@ -90,14 +90,15 @@ jobs:
         with:
           platforms: ${{ matrix.arch }}
 
-      - name: Run Tests in Docker
+      - name: Run tests using docker and qemu
         run: |
+          pwd
           docker run \
             --rm \
             -v $(pwd):/${{ github.workspace }} \
             -w ${{ github.workspace }} \
             --platform linux/${{ matrix.arch }} \
             ghcr.io/stv-io/tg-gcp-ci-tools-image:a4b4cfac5b74b8c2e5da64da822167c556eea4ec \
-            ./.github/workflows/ci.sh
+            ${{ github.workspace }}/.github/workflows/ci.sh
 
 
