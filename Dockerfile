@@ -1,7 +1,11 @@
+# https://hub.docker.com/_/debian/tags?page=1&name=11.
 FROM debian:11.6-slim
 
-ENV GCLOUD_VERSION=425.0.0
+# https://cloud.google.com/sdk/docs/release-notes
+ENV GCLOUD_VERSION=427.0.0
+# https://github.com/warrensbox/terraform-switcher/releases
 ENV TERRAFORM_SWITCHER_VERSION=0.13.1308
+# https://github.com/warrensbox/tgswitch/releases
 ENV TGSWITCH_VERSION=0.6.0
 
 RUN apt-get update && apt-get upgrade -y \
@@ -27,7 +31,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gpg \
     gpg-agent \
     unzip \
-    # python3-distutils=xxx \
+    apt-transport-https \
+    gnupg \
     && apt-get autoremove -y && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -36,10 +41,24 @@ RUN useradd -m -s /bin/bash tfuser && \
 
 RUN curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh ${TERRAFORM_SWITCHER_VERSION} | bash
 RUN curl -L https://raw.githubusercontent.com/warrensbox/tgswitch/release/install.sh ${TGSWITCH_VERSION} | bash
-RUN curl -L https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz -o /tmp/gcloud.tar.gz \
-    && mkdir -p /home/tfuser/.local/gcloud \
-    && tar xf /tmp/gcloud.tar.gz -C /home/tfuser/.local/gcloud --strip-components=1 \
-    && rm /tmp/gcloud.tar.gz
+RUN mkdir -p /home/tfuser/.local/gcloud
+ADD https://raw.githubusercontent.com/twistedpair/google-cloud-sdk/master/google-cloud-sdk/completion.bash.inc /home/tfuser/.local/gcloud/completion.bash.inc
+ADD https://raw.githubusercontent.com/twistedpair/google-cloud-sdk/master/google-cloud-sdk/path.bash.inc /home/tfuser/.local/gcloud/path.bash.inc
+# RUN curl -L https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GCLOUD_VERSION}-linux-x86_64.tar.gz -o /tmp/gcloud.tar.gz \
+#     && mkdir -p /home/tfuser/.local/gcloud \
+#     && tar xf /tmp/gcloud.tar.gz -C /home/tfuser/.local/gcloud --strip-components=1 \
+#     && rm /tmp/gcloud.tar.gz
+
+# RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+# or RUN echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+
+# RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+# RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo tee /usr/share/keyrings/cloud.google.gpg
+
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg  add - && \
+    apt-get update -y && \
+    apt-get install google-cloud-cli=${GCLOUD_VERSION}-0 -y
 
 COPY .bashrc /home/tfuser/.bashrc
 
@@ -52,3 +71,4 @@ WORKDIR /home/tfuser
 
 SHELL ["/bin/bash", "-c"]
 ENTRYPOINT ["/bin/bash"]
+
