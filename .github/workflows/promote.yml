@@ -10,6 +10,10 @@ on:
 jobs:
   get-pr-info:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-pr-info.outputs.VERSION }}
+      container_tag: ${{ steps.get-pr-info.outputs.CONTAINER_TAG }}    
+      pr_num: ${{ steps.get-pr-info.outputs.PR_NUM }}    
     steps:
       - uses: actions/checkout@v3
         with:
@@ -22,7 +26,6 @@ jobs:
         run: |
           VERSION=$(cat VERSION)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "$VER"
           git --no-pager log --pretty=oneline
           PR_NUM=$(git --no-pager log --pretty=oneline  | grep "#" | head -n 1  | awk -F '#' '{print $2}' | awk '{print $1}' | tr -d '(#)')
           echo "PR_NUM $PR_NUM"
@@ -37,10 +40,14 @@ jobs:
     container: quay.io/skopeo/stable:v1.11.2
     steps:
       - name: "Skopeo promote previous PR's build"      
+        env:
+          VERSION: ${{needs.get-pr-info.outputs.version}}
+          CONTAINER_TAG: ${{needs.get-pr-info.outputs.container_tag}}
+          PR_NUM: ${{needs.get-pr-info.outputs.pr_num}}
         run: |
-          echo "DEBUG VERSION ${{ steps.get-pr-info.outputs.VERSION }}"
-          echo "DEBUG CONTAINER_TAG ${{ steps.get-pr-info.outputs.CONTAINER_TAG }}"
-          echo "DEBUG PR_NUM ${{ steps.get-pr-info.outputs.PR_NUM }}"
+          echo "DEBUG VERSION $VERSION"
+          echo "DEBUG CONTAINER_TAG $CONTAINER_TAG"
+          echo "DEBUG PR_NUM ${PR_NUM"
           echo ${{ secrets.GITHUB_TOKEN }} | skopeo login ghcr.io -u stv-io --password-stdin
           echo "Promoting built image to release"
           skopeo copy --multi-arch all docker://ghcr.io/${{ github.repository }}:${CONTAINER_TAG} docker://ghcr.io/${{ github.repository }}:v${VERSION}-rc
