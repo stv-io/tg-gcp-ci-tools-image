@@ -3,7 +3,7 @@
 FROM debian:11.6-slim 
 # https://hub.docker.com/_/debian/tags?page=1&name=11.
 
-ENV GCLOUD_VERSION=427.0.0
+ENV GCLOUD_VERSION=430.0.0
 # https://cloud.google.com/sdk/docs/release-notes
 
 ENV TERRAFORM_SWITCHER_VERSION=0.13.1308
@@ -11,6 +11,9 @@ ENV TERRAFORM_SWITCHER_VERSION=0.13.1308
 
 ENV TGSWITCH_VERSION=0.6.0
 # https://github.com/warrensbox/tgswitch/releases
+
+ENV TFLINT_VERSION=v0.46.1
+# https://github.com/terraform-linters/tflint/releases
 
 RUN apt-get update && apt-get upgrade -y \
     && apt-get autoremove -y && apt-get clean \
@@ -38,6 +41,7 @@ RUN useradd -m -s /bin/bash tfuser && \
 
 RUN curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh ${TERRAFORM_SWITCHER_VERSION} | bash && \
     curl -L https://raw.githubusercontent.com/warrensbox/tgswitch/release/install.sh ${TGSWITCH_VERSION} | bash && \
+    curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash && \
     mkdir -p /home/tfuser/.local/gcloud && \
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg  add - && \
