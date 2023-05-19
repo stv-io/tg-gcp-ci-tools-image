@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: igri-runner
     steps:
       - uses: actions/checkout@v3
 
@@ -69,7 +69,7 @@ jobs:
 
   testing:
     name: Run tests on ${{ matrix.arch }}
-    runs-on: ubuntu-latest
+    runs-on: igri-runner
     needs: build
     strategy:
       matrix:
